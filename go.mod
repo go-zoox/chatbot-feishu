@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/go-zoox/core-utils v1.2.4
-	github.com/go-zoox/feishu v1.2.4
+	github.com/go-zoox/feishu v1.2.6
 	github.com/go-zoox/zoox v1.7.14
 )
 

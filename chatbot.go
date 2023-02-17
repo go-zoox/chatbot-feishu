@@ -25,11 +25,11 @@ type Config struct {
 
 type chatbot struct {
 	cfg       *Config
-	onMessage func(content string, request *feishuEvent.EventRequest, reply func(content string) error) error
+	onMessage feishuEvent.MessageHandler
 }
 
 // New creates a new chatbot
-func New(cfg *Config, onMessage func(content string, request *feishuEvent.EventRequest, reply func(content string) error) error) (ChatBot, error) {
+func New(cfg *Config, onMessage feishuEvent.MessageHandler) (ChatBot, error) {
 	if cfg.Path == "" {
 		cfg.Path = "/"
 	}
