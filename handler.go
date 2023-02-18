@@ -24,6 +24,8 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 		}
 
 		if request.IsChallenge() {
+			ctx.Logger.Infof("challenge request => %s", request.Challenge)
+
 			if request.Challenge == "" {
 				ctx.Fail(fmt.Errorf("expect challenge, but got empty"), 400000, "expect challenge, but got empty")
 				return
