@@ -1,14 +1,31 @@
 package chatbot
 
 import (
+	"github.com/go-zoox/core-utils/fmt"
 	feishuEvent "github.com/go-zoox/feishu/event"
 	"github.com/go-zoox/zoox"
+	"github.com/go-zoox/zoox/defaults"
 )
+
+type OnMessageHandler = feishuEvent.MessageHandler
+
+type Command struct {
+	ArgsLength int `json:"args_length,omitempty"`
+	Handler    func(args []string, request *feishuEvent.EventRequest, reply func(content string, msgType ...string) error) error
+}
+
+type Event struct {
+	Handler func(request *feishuEvent.EventRequest, reply func(content string, msgType ...string) error) error
+}
 
 // ChatBot is the chatbot interface.
 type ChatBot interface {
+	OnMessage(handler OnMessageHandler) error
+	OnEvent(event string, handler *Event) error
+	OnCommand(command string, handler *Command) error
+	Run() error
+	//
 	Handler() zoox.HandlerFunc
-	Serve() error
 }
 
 // Config is the configuration for create chatbot.
@@ -25,11 +42,13 @@ type Config struct {
 
 type chatbot struct {
 	cfg       *Config
-	onMessage feishuEvent.MessageHandler
+	onMessage OnMessageHandler
+	events    map[string]*Event
+	commands  map[string]*Command
 }
 
 // New creates a new chatbot
-func New(cfg *Config, onMessage feishuEvent.MessageHandler) (ChatBot, error) {
+func New(cfg *Config) (ChatBot, error) {
 	if cfg.Path == "" {
 		cfg.Path = "/"
 	}
@@ -38,7 +57,44 @@ func New(cfg *Config, onMessage feishuEvent.MessageHandler) (ChatBot, error) {
 	}
 
 	return &chatbot{
-		cfg:       cfg,
-		onMessage: onMessage,
+		cfg:      cfg,
+		events:   make(map[string]*Event),
+		commands: map[string]*Command{},
 	}, nil
+}
+
+func (c *chatbot) OnMessage(handler OnMessageHandler) error {
+	if c.onMessage != nil {
+		return fmt.Errorf("on message is already registered")
+	}
+
+	c.onMessage = handler
+	return nil
+}
+
+func (c *chatbot) OnEvent(event string, handler *Event) error {
+	if _, ok := c.events[event]; ok {
+		return fmt.Errorf("failed to register event %s, which is already registered before", event)
+	}
+
+	c.events[event] = handler
+	return nil
+}
+
+func (c *chatbot) OnCommand(command string, handler *Command) error {
+	if _, ok := c.commands[command]; ok {
+		return fmt.Errorf("failed to register command %s, which is already registered before", command)
+	}
+
+	c.commands[command] = handler
+	return nil
+}
+
+// Run starts a application server.
+func (c *chatbot) Run() error {
+	app := defaults.Application()
+
+	app.Post(c.cfg.Path, c.Handler())
+
+	return app.Run(fmt.Sprintf(":%d", c.cfg.Port))
 }

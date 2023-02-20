@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-zoox/core-utils v1.2.4
 	github.com/go-zoox/feishu v1.3.4
+	github.com/go-zoox/testify v1.0.0
 	github.com/go-zoox/zoox v1.7.16
 )
 
@@ -53,6 +54,7 @@ require (
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
