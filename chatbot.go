@@ -7,13 +7,16 @@ import (
 	"github.com/go-zoox/zoox/defaults"
 )
 
+// OnMessageHandler ...
 type OnMessageHandler = feishuEvent.MessageHandler
 
+// Command ...
 type Command struct {
 	ArgsLength int `json:"args_length,omitempty"`
 	Handler    func(args []string, request *feishuEvent.EventRequest, reply func(content string, msgType ...string) error) error
 }
 
+// Event ...
 type Event struct {
 	Handler func(request *feishuEvent.EventRequest, reply func(content string, msgType ...string) error) error
 }
