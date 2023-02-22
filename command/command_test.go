@@ -17,17 +17,15 @@ func TestGetCommandWithArgs(t *testing.T) {
 	command, arg, err := ParseCommandWithArg("/ls")
 	testify.Assert(t, err == nil)
 	testify.Assert(t, command == "ls")
-	testify.Assert(t, len(arg) == 0)
+	testify.Assert(t, arg == "")
 
 	command, arg, err = ParseCommandWithArg("/ls -al")
 	testify.Assert(t, err == nil)
 	testify.Assert(t, command == "ls")
-	testify.Assert(t, len(arg) == 1)
 	testify.Assert(t, arg == "-al")
 
 	command, arg, err = ParseCommandWithArg("/ls -a -l -x")
 	testify.Assert(t, err == nil)
 	testify.Assert(t, command == "ls")
-	testify.Assert(t, len(arg) == 1)
 	testify.Assert(t, arg == "-a -l -x")
 }
