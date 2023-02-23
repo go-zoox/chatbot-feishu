@@ -9,6 +9,7 @@ import (
 	"github.com/go-zoox/logger"
 
 	"github.com/go-zoox/chatbot-feishu/command"
+	"github.com/go-zoox/chatbot-feishu/utils"
 	"github.com/go-zoox/core-utils/fmt"
 	"github.com/go-zoox/feishu"
 	feishuEvent "github.com/go-zoox/feishu/event"
@@ -29,13 +30,31 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 			return
 		}
 
+		if request.Encrypt != "" {
+			if c.cfg.EncryptKey == "" {
+				ctx.Fail(fmt.Errorf("encrypt key missing"), 400000, "encrypt key missing")
+				return
+			}
+
+			plaintext, err := utils.Decrypt(request.Encrypt, c.cfg.EncryptKey)
+			if err != nil {
+				ctx.Fail(fmt.Errorf("failed to descript, please check encrypt key: %v", err), 400001, "failed to descript, please check encrypt key")
+				return
+			}
+
+			if err := json.Unmarshal(plaintext, &request); err != nil {
+				ctx.Fail(fmt.Errorf("failed to parse descripted body: %v", err), 400002, "failed to parse descripted body")
+				return
+			}
+		}
+
 		if request.IsChallenge() {
 			ctx.Logger.Infof("challenge request => %s", request.Challenge)
 
 			if c.cfg.VerificationToken != "" {
 				if request.Token != c.cfg.VerificationToken {
 					logger.Infof("verification token expect %s, but got %s", c.cfg.VerificationToken, request.Token)
-					ctx.Fail(fmt.Errorf("verification tokens are not matched"), 400000, "verification tokens are not matched")
+					ctx.Fail(fmt.Errorf("verification tokens are not matched"), 400001, "verification tokens are not matched")
 					return
 				}
 			}
