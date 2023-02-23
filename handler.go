@@ -32,9 +32,12 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 		if request.IsChallenge() {
 			ctx.Logger.Infof("challenge request => %s", request.Challenge)
 
-			if request.Challenge == "" {
-				ctx.Fail(fmt.Errorf("expect challenge, but got empty"), 400000, "expect challenge, but got empty")
-				return
+			if c.cfg.VerificationToken != "" {
+				if request.Token != c.cfg.VerificationToken {
+					logger.Infof("verification token expect %s, but got %s", c.cfg.VerificationToken, request.Token)
+					ctx.Fail(fmt.Errorf("verification tokens are not matched"), 400000, "verification tokens are not matched")
+					return
+				}
 			}
 
 			ctx.JSON(http.StatusOK, zoox.H{
