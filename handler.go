@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-zoox/core-utils/strings"
+	"github.com/go-zoox/debug"
 	"github.com/go-zoox/logger"
 
 	"github.com/go-zoox/chatbot-feishu/command"
@@ -45,64 +46,70 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 
 		event := bot.Event(&request)
 
-		// go event.OnChatReceiveMessage(func(contentString string, request *feishuEvent.EventRequest, reply func(content string) error) error {
-		// 	if contentString != "" {
-		// 		type Content struct {
-		// 			Text string `json:"text"`
-		// 		}
-		// 		var content Content
-		// 		if err := json.Unmarshal([]byte(contentString), &content); err != nil {
-		// 			return err
-		// 		}
-		// 	}
-
-		// 	return nil
-		// })
-
-		go event.OnChatReceiveMessage(func(content string, request *feishuEvent.EventRequest, reply func(content string, msgType ...string) error) error {
-			if c.onMessage != nil {
-				if err := c.onMessage(content, request, reply); err != nil {
-					logger.Warn("failed to list message: %v", err)
+		go func() {
+			err := event.OnChatReceiveMessage(func(content string, request *feishuEvent.EventRequest, reply MessageReply) error {
+				if debug.IsDebugMode() {
+					fmt.PrintJSON(map[string]any{
+						"event": event,
+					})
 				}
-			}
 
-			if len(c.events) != 0 {
-				if event, ok := c.events[request.EventType()]; ok {
-					if err := event.Handler(request, reply); err != nil {
-						logger.Warn("failed to listen event(%s): %v", request.EventType(), err)
-					}
-				}
-			}
-
-			if len(c.commands) != 0 {
 				type Content struct {
+					Type string `json:"type"`
 					Text string `json:"text"`
 				}
-
 				var contentX Content
-				if err := json.Unmarshal([]byte(content), &content); err != nil {
-					return err
+				if err := json.Unmarshal([]byte(content), &contentX); err != nil {
+					return fmt.Errorf("failed to parse message content(%s): %v", content, err)
 				}
 
-				if !command.IsCommand(contentX.Text) {
+				if contentX.Text == "" {
+					logger.Infof("ignore message type: %s", contentX.Type)
 					return nil
 				}
 
-				cmd, arg, err := command.ParseCommandWithArg(contentX.Text)
-				if err != nil {
-					return fmt.Errorf("failed to parse command(%s): %v", contentX.Text, err)
-				}
+				logger.Infof("text message: %s", contentX.Text)
 
-				if c, ok := c.commands[cmd]; ok {
-					if err := c.Handler(strings.SplitN(arg, " ", c.ArgsLength), request, reply); err != nil {
-						logger.Errorf("failed to run command(%s): %v", contentX.Text, err)
-						reply("failed to run command %s: %s", cmd, err.Error())
+				if len(c.events) != 0 {
+					if event, ok := c.events[request.EventType()]; ok {
+						if err := event.Handler(request, reply); err != nil {
+							logger.Warn("failed to listen event(%s): %v", request.EventType(), err)
+						}
 					}
 				}
-			}
 
-			return nil
-		})
+				if len(c.commands) != 0 {
+					logger.Infof("start to check whether %s is a command ...", contentX.Text)
+					if command.IsCommand(contentX.Text) {
+						cmd, arg, err := command.ParseCommandWithArg(contentX.Text)
+						if err != nil {
+							return fmt.Errorf("failed to parse command(%s): %v", contentX.Text, err)
+						}
+
+						logger.Infof("start to check whether command(%s) exists ...", cmd)
+						if c, ok := c.commands[cmd]; ok {
+							if err := c.Handler(strings.SplitN(arg, " ", c.ArgsLength), request, reply); err != nil {
+								logger.Errorf("failed to run command(%s): %v", contentX.Text, err)
+								reply("failed to run command %s: %s", cmd, err.Error())
+							}
+							return nil
+						}
+					}
+				}
+
+				logger.Infof("fallback to common message: %s...", content)
+				if c.onMessage != nil {
+					if err := c.onMessage(contentX.Text, request, reply); err != nil {
+						logger.Warn("failed to list message: %v", err)
+					}
+				}
+
+				return nil
+			})
+			if err != nil {
+				logger.Errorf("failed to OnChatReceiveMessage: %v", err)
+			}
+		}()
 
 		ctx.Success(nil)
 	}

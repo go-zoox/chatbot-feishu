@@ -3,6 +3,7 @@ package chatbot
 import (
 	"github.com/go-zoox/core-utils/fmt"
 	feishuEvent "github.com/go-zoox/feishu/event"
+	"github.com/go-zoox/logger"
 	"github.com/go-zoox/zoox"
 	"github.com/go-zoox/zoox/defaults"
 )
@@ -10,21 +11,24 @@ import (
 // OnMessageHandler ...
 type OnMessageHandler = feishuEvent.MessageHandler
 
+// MessageReply ...
+type MessageReply = func(content string, msgType ...string) error
+
 // Command ...
 type Command struct {
 	ArgsLength int `json:"args_length,omitempty"`
-	Handler    func(args []string, request *feishuEvent.EventRequest, reply func(content string, msgType ...string) error) error
+	Handler    func(args []string, request *feishuEvent.EventRequest, reply MessageReply) error
 }
 
 // Event ...
 type Event struct {
-	Handler func(request *feishuEvent.EventRequest, reply func(content string, msgType ...string) error) error
+	Handler func(request *feishuEvent.EventRequest, reply MessageReply) error
 }
 
 // ChatBot is the chatbot interface.
 type ChatBot interface {
-	OnMessage(handler OnMessageHandler) error
 	OnEvent(event string, handler *Event) error
+	OnMessage(handler OnMessageHandler) error
 	OnCommand(command string, handler *Command) error
 	Run() error
 	//
@@ -89,6 +93,7 @@ func (c *chatbot) OnCommand(command string, handler *Command) error {
 		return fmt.Errorf("failed to register command %s, which is already registered before", command)
 	}
 
+	logger.Infof("register command: %s", command)
 	c.commands[command] = handler
 	return nil
 }
