@@ -70,13 +70,13 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 
 				logger.Infof("text message: %s", contentX.Text)
 
-				if len(c.events) != 0 {
-					if event, ok := c.events[request.EventType()]; ok {
-						if err := event.Handler(request, reply); err != nil {
-							logger.Warn("failed to listen event(%s): %v", request.EventType(), err)
-						}
-					}
-				}
+				// if len(c.events) != 0 {
+				// 	if event, ok := c.events[request.EventType()]; ok {
+				// 		if err := event.Handler(request, reply); err != nil {
+				// 			logger.Warn("failed to listen event(%s): %v", request.EventType(), err)
+				// 		}
+				// 	}
+				// }
 
 				if len(c.commands) != 0 {
 					logger.Infof("start to check whether %s is a command ...", contentX.Text)

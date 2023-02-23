@@ -20,14 +20,8 @@ type Command struct {
 	Handler    func(args []string, request *feishuEvent.EventRequest, reply MessageReply) error
 }
 
-// Event ...
-type Event struct {
-	Handler func(request *feishuEvent.EventRequest, reply MessageReply) error
-}
-
 // ChatBot is the chatbot interface.
 type ChatBot interface {
-	OnEvent(event string, handler *Event) error
 	OnMessage(handler OnMessageHandler) error
 	OnCommand(command string, handler *Command) error
 	Run() error
@@ -50,7 +44,6 @@ type Config struct {
 type chatbot struct {
 	cfg       *Config
 	onMessage OnMessageHandler
-	events    map[string]*Event
 	commands  map[string]*Command
 }
 
@@ -65,7 +58,6 @@ func New(cfg *Config) (ChatBot, error) {
 
 	return &chatbot{
 		cfg:      cfg,
-		events:   make(map[string]*Event),
 		commands: map[string]*Command{},
 	}, nil
 }
@@ -76,15 +68,6 @@ func (c *chatbot) OnMessage(handler OnMessageHandler) error {
 	}
 
 	c.onMessage = handler
-	return nil
-}
-
-func (c *chatbot) OnEvent(event string, handler *Event) error {
-	if _, ok := c.events[event]; ok {
-		return fmt.Errorf("failed to register event %s, which is already registered before", event)
-	}
-
-	c.events[event] = handler
 	return nil
 }
 
