@@ -49,13 +49,15 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 		go func() {
 			err := event.OnChatReceiveMessage(func(content string, request *feishuEvent.EventRequest, reply MessageReply) error {
 				if debug.IsDebugMode() {
-					fmt.PrintJSON(map[string]any{
-						"event": event,
-					})
+					fmt.PrintJSON(request)
+				}
+
+				if request.Event.Message.MessageType != "text" {
+					logger.Infof("ignore message type: %s", request.Event.Message.MessageType)
+					return nil
 				}
 
 				type Content struct {
-					Type string `json:"type"`
 					Text string `json:"text"`
 				}
 				var contentX Content
@@ -64,11 +66,11 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 				}
 
 				if contentX.Text == "" {
-					logger.Infof("ignore message type: %s", contentX.Type)
+					logger.Infof("ignore empty message: %s", content)
 					return nil
 				}
 
-				logger.Infof("text message: %s", contentX.Text)
+				logger.Infof("message: %s", contentX.Text)
 
 				// if len(c.events) != 0 {
 				// 	if event, ok := c.events[request.EventType()]; ok {
