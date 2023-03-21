@@ -3,9 +3,9 @@ module github.com/go-zoox/chatbot-feishu
 go 1.19
 
 require (
-	github.com/go-zoox/core-utils v1.2.4
+	github.com/go-zoox/core-utils v1.2.7
 	github.com/go-zoox/debug v1.0.1
-	github.com/go-zoox/feishu v1.3.7
+	github.com/go-zoox/feishu v1.3.11
 	github.com/go-zoox/logger v1.4.0
 	github.com/go-zoox/testify v1.0.0
 	github.com/go-zoox/zoox v1.7.16
@@ -24,11 +24,10 @@ require (
 	github.com/go-zoox/cron v1.1.2 // indirect
 	github.com/go-zoox/crypto v1.1.8 // indirect
 	github.com/go-zoox/datetime v1.1.1 // indirect
-	github.com/go-zoox/dotenv v1.2.3 // indirect
 	github.com/go-zoox/encoding v1.2.1 // indirect
 	github.com/go-zoox/errors v1.0.2 // indirect
 	github.com/go-zoox/fetch v1.7.4 // indirect
-	github.com/go-zoox/fs v1.3.7 // indirect
+	github.com/go-zoox/fs v1.3.9 // indirect
 	github.com/go-zoox/gzip v1.0.0 // indirect
 	github.com/go-zoox/headers v1.0.5 // indirect
 	github.com/go-zoox/jobqueue v1.0.0 // indirect
@@ -44,7 +43,6 @@ require (
 	github.com/goccy/go-yaml v1.9.8 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
