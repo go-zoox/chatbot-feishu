@@ -112,7 +112,14 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 
 						logger.Infof("start to check whether command(%s) exists ...", cmd)
 						if c, ok := c.commands[cmd]; ok {
-							if err := c.Handler(strings.SplitN(arg, " ", c.ArgsLength), request, reply); err != nil {
+							var args []string
+							if c.ArgsLength != 0 {
+								args = strings.SplitN(arg, " ", c.ArgsLength)
+							} else {
+								args = strings.Split(arg, " ")
+							}
+
+							if err := c.Handler(args, request, reply); err != nil {
 								logger.Errorf("failed to run command(%s): %v", contentX.Text, err)
 								reply("failed to run command %s: %s", cmd, err.Error())
 							}
