@@ -92,7 +92,7 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 					return nil
 				}
 
-				logger.Infof("message: %s", contentX.Text)
+				logger.Debugf("message: %s", contentX.Text)
 
 				// if len(c.events) != 0 {
 				// 	if event, ok := c.events[request.EventType()]; ok {
@@ -103,14 +103,14 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 				// }
 
 				if len(c.commands) != 0 {
-					logger.Infof("start to check whether %s is a command ...", contentX.Text)
+					logger.Debugf("start to check whether %s is a command ...", contentX.Text)
 					if command.IsCommand(contentX.Text) {
 						cmd, arg, err := command.ParseCommandWithArg(contentX.Text)
 						if err != nil {
 							return fmt.Errorf("failed to parse command(%s): %v", contentX.Text, err)
 						}
 
-						logger.Infof("start to check whether command(%s) exists ...", cmd)
+						logger.Debugf("start to check whether command(%s) exists ...", cmd)
 						if c, ok := c.commands[cmd]; ok {
 							var args []string
 							if c.ArgsLength != 0 {
@@ -128,7 +128,7 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 					}
 				}
 
-				logger.Infof("fallback to common message: %s...", content)
+				logger.Debugf("fallback to common message: %s...", content)
 				if c.onMessage != nil {
 					if err := c.onMessage(contentX.Text, request, reply); err != nil {
 						logger.Warn("failed to list message: %v", err)
