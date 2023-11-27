@@ -5,7 +5,7 @@ import (
 	"github.com/go-zoox/core-utils/strings"
 )
 
-var isCommandRe, _ = regexp.New("^/\\w+\\s{0,}")
+var isCommandRe, _ = regexp.New("^/[^\\s]+\\s{0,}")
 
 func IsCommand(text string) bool {
 	return isCommandRe.Match(text)

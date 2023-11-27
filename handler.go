@@ -103,16 +103,29 @@ func (c *chatbot) Handler() zoox.HandlerFunc {
 				// }
 
 				if len(c.commands) != 0 {
+					text := contentX.Text
+					if strings.StartsWith(text, "@_user_1 ") {
+						text = text[len("@_user_1 "):]
+					}
+					text = strings.TrimSpace(text)
+
 					logger.Infof("start to check whether %s is a command ...", contentX.Text)
-					if command.IsCommand(contentX.Text) {
-						cmd, arg, err := command.ParseCommandWithArg(contentX.Text)
+					if command.IsCommand(text) {
+						cmd, arg, err := command.ParseCommandWithArg(text)
 						if err != nil {
-							return fmt.Errorf("failed to parse command(%s): %v", contentX.Text, err)
+							return fmt.Errorf("failed to parse command(%s): %v", text, err)
 						}
 
-						logger.Infof("start to check whether command(%s) exists ...", cmd)
+						logger.Infof("start to check whether command(cmd: %s, arg: %s) exists ...", cmd, arg)
 						if c, ok := c.commands[cmd]; ok {
-							if err := c.Handler(strings.SplitN(arg, " ", c.ArgsLength), request, reply); err != nil {
+							var args []string
+							if c.ArgsLength != 0 {
+								args = strings.SplitN(arg, " ", c.ArgsLength)
+							} else {
+								args = []string{arg}
+							}
+
+							if err := c.Handler(args, request, reply); err != nil {
 								logger.Errorf("failed to run command(%s): %v", contentX.Text, err)
 								reply("failed to run command %s: %s", cmd, err.Error())
 							}
